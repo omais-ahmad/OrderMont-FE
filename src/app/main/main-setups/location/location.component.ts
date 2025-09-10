@@ -1,10 +1,9 @@
-import { Component, Injector, OnInit, ViewEncapsulation } from "@angular/core";
-import { MainSetupsService } from "../../shared/services/main-setups.service";
-import { ItemCategory } from "../../shared/dtos/item-category";
+import { Component, Injector } from "@angular/core";
+import { MainSetupsService } from "../shared/services/main-setups.service";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { catchError, finalize, throwError } from "rxjs";
 import { UrlHelper } from "@shared/helpers/UrlHelper";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { Table } from "@node_modules/primeng/table";
 import { ChangeDetectorRef } from "@angular/core";
 import { GridApi, GridReadyEvent, ColDef } from "ag-grid-community";
@@ -13,15 +12,19 @@ import { ViewChild, ElementRef } from "@angular/core";
 import { saveAs } from "file-saver";
 import * as ExcelJS from "exceljs";
 
+export class Location {
+  id: 0;
+  name: string;
+  address: string;
+}
+
 @Component({
-  selector: "app-item-category",
-  templateUrl: "./item-category.component.html",
-  encapsulation: ViewEncapsulation.None,
-  providers: [ConfirmationService],
+  selector: "app-location",
+  templateUrl: "./location.component.html",
 })
-export class ItemCategoryComponent implements OnInit {
+export class LocationComponent {
   @ViewChild("fileInput") fileInput: ElementRef;
-  materialType: ItemCategory = new ItemCategory();
+  materialType: Location = new Location();
   urlHelper = UrlHelper;
   tableData: any;
   itemForm: FormGroup;
@@ -37,17 +40,15 @@ export class ItemCategoryComponent implements OnInit {
   skipCount: number = 0;
   maxCount: number = 10;
   tooltipMap: { [key: number]: string } = {};
-  units: { id: any; name: string; additional: string }[] = [];
-  protected gridApi: GridApi;
+  locations: { id: any; name: string; additional: string }[] = [];
   filters = {
     skipCount: this.skipCount,
     maxCount: this.maxCount,
     name: "",
-    VoucherNumber: "",
   };
   rowSelection: string;
-  target = "Category";
-  target1 = "Item";
+  target = "Location";
+  target1 = "Location";
   currentPage = 1;
   constructor(
     injector: Injector,
@@ -58,122 +59,9 @@ export class ItemCategoryComponent implements OnInit {
     private confirmationService: ConfirmationService
   ) {}
 
-  colDefs: ColDef[] = [
-    {
-      headerName: "SrNo",
-      editable: false,
-      field: "srNo",
-      sortable: true,
-      width: 90,
-      valueGetter: "node.rowIndex+1",
-      suppressSizeToFit: true,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Item Name",
-      field: "itemName",
-      editable: false,
-      resizable: true,
-      width: 250,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Unit Id",
-      field: "unitId",
-      cellEditor: "agSelectCellEditor",
-      cellEditorParams: (params) => {
-        return {
-          values: this.units.map((unit) => unit.name),
-          cellEditorPopup: true, // Opens the editor in a popup to enhance visibility
-          filter: true, // Enables filtering
-          searchDebounceDelay: 200, // Optional: Adds a debounce for smoother search
-        };
-      },
-      valueGetter: (params) => {
-        const unit = this.units.find((unit) => unit.id === params.data.unitId);
-        return unit ? unit.name : "";
-      },
-      valueSetter: (params) => {
-        const selectedUnit = this.units.find(
-          (unit) => unit.name === params.newValue
-        );
-        if (selectedUnit) {
-          params.data.unitId = selectedUnit.id;
-          return true;
-        }
-        return false;
-      },
-      editable: false,
-      resizable: true,
-      width: 120,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Stock Level",
-      field: "minStockLevel",
-      editable: false,
-      resizable: true,
-      width: 120,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Unit Price",
-      field: "unitPrice",
-      editable: true,
-      resizable: true,
-      width: 120,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Price Peg Bag",
-      field: "perBagPrice",
-      editable: false,
-      resizable: true,
-      width: 180,
-    },
-    {
-      headerName: "Min Price (KG)",
-      field: "minSalePrice",
-      editable: true,
-      resizable: true,
-
-      width: 80,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Max Price (KG)",
-      field: "maxSalePrice",
-      editable: true,
-      resizable: true,
-
-      width: 80,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-    {
-      headerName: "Barcode",
-      field: "barcode",
-      editable: true,
-      resizable: true,
-      width: 150,
-      cellClass: "ag-styling-cell",
-      headerClass: "ag-header-name",
-    },
-  ];
-
   ngOnInit() {
     this.loading = true;
     this.getAll();
-    this.fetchDropdownData("Unit");
-    this._materialTypeService.saveCategory$.subscribe((data) => {
-      this.save(data);
-    });
   }
 
   fetchDropdownData(target) {
@@ -186,19 +74,14 @@ export class ItemCategoryComponent implements OnInit {
           additional: item?.additional,
         }));
         switch (target) {
-          case "Unit":
-            this.units = mappedData;
+          case "Location":
+            this.locations = mappedData;
             break;
           default:
             break;
         }
         this.cdr.detectChanges();
       });
-  }
-  onGridReady(params: GridReadyEvent) {
-    this.gridApi = params.api;
-    this.rowSelection = "multiple";
-    this.rowData = [];
   }
 
   getAll() {
@@ -275,58 +158,6 @@ export class ItemCategoryComponent implements OnInit {
     });
   }
 
-  onAddRow() {
-    const newItem: Record<string, any> = {};
-    this.colDefs.forEach((colDef) => {
-      if (colDef.field) {
-        newItem[colDef.field] = null;
-      }
-    });
-    this.gridApi.applyTransaction({ add: [newItem] });
-    this.rowCount = this.gridApi.getDisplayedRowCount();
-  }
-
-  onRemoveSelected() {
-    const selectedNodes = this.gridApi.getSelectedNodes();
-    if (selectedNodes.length > 0) {
-      const dataToRemove = selectedNodes.map((node) => node.data);
-      this.gridApi.applyTransaction({ remove: dataToRemove });
-      this.rowData = [];
-      this.gridApi.forEachNode((node) => this.rowData.push(node.data));
-    }
-  }
-  calculateTotalAmount() {
-    let totalAmount = 0;
-    if (this.gridApi) {
-      this.gridApi.forEachNode((node) => {
-        if (node.data.grandTotal) {
-          totalAmount += Number(node.data.grandTotal);
-        }
-      });
-      // this.purchaseOrderForm.get("total").setValue(totalAmount);
-    }
-  }
-
-  onCellValueChanged(params) {
-    const data = params.data;
-    data.unitPrice = Number(data.unitPrice) || 0;
-    data.maxSalePrice = Number(data.maxSalePrice) || 0;
-    data.minSalePrice = Number(data.minSalePrice) || 0;
-    data.quantity = Number(data.quantity) || 0;
-    const selectedUnit = this.units.find((unit) => unit.id === data.unitId);
-    const unitMultiplier = selectedUnit
-      ? Number(selectedUnit.additional) || 0
-      : 0;
-    if (params.column.getId() === "unitPrice") {
-      data.minSalePrice = data.unitPrice + 5;
-      data.maxSalePrice = data.unitPrice + 10;
-      data.perBagPrice = unitMultiplier * data.unitPrice;
-    }
-
-    this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
-    console.log(this.rowData);
-  }
-
   show(id?: number) {
     console.log(this.displayModal);
     if (id) {
@@ -355,46 +186,7 @@ export class ItemCategoryComponent implements OnInit {
     } else {
       this.editMode = false;
       this.displayModal = true;
-      this.materialType = new ItemCategory();
-    }
-  }
-  // /api/services/app/Item/GetItemDetailsByCategory?ItemCategoryId=37
-  view(id?: number, name?: string) {
-    this.categoryName = name;
-    if (id) {
-      this.editMode = true;
-      this._materialTypeService
-        .getDataView(id, this.target1)
-        .pipe(
-          finalize(() => {}),
-          catchError((error) => {
-            this.messageService.add({
-              severity: "error",
-              summary: "Error",
-              detail: error.error.error.message,
-              life: 2000,
-            });
-            return throwError(error.error.error.message);
-          })
-        )
-        .subscribe({
-          next: (response) => {
-            this.materialType = response;
-
-            this.rowData = response.map((item) => ({
-              ...item,
-            }));
-            this.gridApi.refreshCells();
-            console.log(this.rowData);
-            console.log("Item Category Response", response);
-            this.displayModalveiw = true;
-            this.cdr.detectChanges();
-          },
-        });
-    } else {
-      this.editMode = false;
-      this.displayModalveiw = true;
-      this.materialType = new ItemCategory();
+      this.materialType = new Location();
     }
   }
 
@@ -451,9 +243,6 @@ export class ItemCategoryComponent implements OnInit {
 
   update(data?: any) {
     this.saving = true;
-
-    console.log("data in category of item", data);
-
     if (data) {
       this.materialType = data;
     }
@@ -554,7 +343,8 @@ export class ItemCategoryComponent implements OnInit {
     this.previewModalVisible = true;
   }
   headerMap: { [key: string]: string } = {
-    Name: "name", // Display header → Backend field
+    Name: "name",
+    Address: "address",
   };
 
   downloadTemplate() {
@@ -591,7 +381,7 @@ export class ItemCategoryComponent implements OnInit {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(blob, "Category_Upload_Template.xlsx");
+      saveAs(blob, "Location_Upload_Template.xlsx");
     });
   }
 

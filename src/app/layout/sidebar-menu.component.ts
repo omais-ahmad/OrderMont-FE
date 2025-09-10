@@ -68,14 +68,14 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
       new MenuItem(this.l("General Setups"), "", " fa-user fas fa-tools", "", [
         new MenuItem(
           this.l("Vendors"),
-          "/app/main/main-setups/unit-of-measure",
+          "/app/main/main-setups/vendors",
           "fas fa-balance-scale",
           ""
         ),
         new MenuItem(
           this.l("Locations"),
-          "/app/main/main-setups/payment-terms",
-          "fas fa-file-invoice-dollar",
+          "/app/main/main-setups/location",
+          "fas fa-map-marker",
           ""
         ),
         // new MenuItem(

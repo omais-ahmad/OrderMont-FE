@@ -87,10 +87,10 @@ export class CreateItemComponent implements OnInit {
   ngOnInit(): void {
     this.getAll();
     this.fetchDropdownData("Unit");
-    this.fetchDropdownData("ItemCategory");
+    this.fetchDropdownData("Category");
     this.fetchDropdownData("COALevel04");
     this._hrmService.categoryUpdated$.subscribe(() => {
-      this.fetchDropdownData("ItemCategory");
+      this.fetchDropdownData("Category");
     });
     this._hrmService.categoryCreated$.subscribe((newCategory) => {
       this.itemCategory = [...this.itemCategory, newCategory];
@@ -336,7 +336,7 @@ export class CreateItemComponent implements OnInit {
         case "Unit":
           this.units = mappedData;
           break;
-        case "ItemCategory":
+        case "Category":
           this.itemCategory = mappedData;
           break;
         case "COALevel04":

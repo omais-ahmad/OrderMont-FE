@@ -6,6 +6,8 @@ import { PaymentTermsComponent } from "./payment-terms/payment-terms.component";
 import { DefaultIntegrationsComponent } from "./default-integrations/default-integrations.component";
 import { WarehouseStockAdjustmentComponent } from "./warehouse-stock-adjustment/warehouse-stock-adjustment.component";
 import { DayBookComponent } from "./daybook/dayBook.component";
+import { VendorsComponent } from "./vendors/vendors.component";
+import { LocationComponent } from "./location/location.component";
 const routes: Routes = [
   {
     path: "",
@@ -33,6 +35,14 @@ const routes: Routes = [
       {
         path: "daybook",
         component: DayBookComponent,
+      },
+      {
+        path: "vendors",
+        component: VendorsComponent,
+      },
+      {
+        path: "location",
+        component: LocationComponent,
       },
     ],
   },

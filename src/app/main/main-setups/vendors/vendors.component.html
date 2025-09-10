@@ -1,0 +1,229 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Vendors</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(vendorTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<!-- Table -->
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #vendorTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name', 'contactName', 'contactEmail']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 200px" pSortableColumn="name">
+          Name <p-sortIcon field="name" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="incoterm">
+          Incoterm <p-sortIcon field="incoterm" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="paymentTerm">
+          Payment Term <p-sortIcon field="paymentTerm" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="contactName">
+          Contact Name <p-sortIcon field="contactName" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="contactEmail">
+          Contact Email <p-sortIcon field="contactEmail" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="percentageAtPo">
+          % at PO <p-sortIcon field="percentageAtPo" />
+        </th>
+        <th style="min-width: 150px">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td>{{ item.name }}</td>
+        <td>{{ item.incoterm }}</td>
+        <td>{{ item.paymentTerm }}</td>
+        <td>{{ item.contactName }}</td>
+        <td>{{ item.contactEmail }}</td>
+        <td>{{ item.percentageAtPo }}%</td>
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [this.count]">
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="70%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="70%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="90%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="60%" height="20px"></p-skeleton></td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
+          <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-paginator
+    [rows]="10"
+    [totalRecords]="this.count"
+    (onPageChange)="this.onPageChange($event)"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 50, 100, this.count]"
+    dropdownAppendTo="body"
+    appendTo="body"
+  >
+  </p-paginator>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [header]="editMode ? 'Edit Record' : 'Create Record'"
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+>
+  <div class="row col-lg-12 col-md-12 col-sm-12 mt-2">
+    <!-- Name -->
+    <div id="inputField" class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="name">Name</label>
+      <input id="name" type="text" pInputText [(ngModel)]="materialType.name" />
+    </div>
+
+    <!-- Incoterm -->
+    <div id="inputField" class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="incoterm">Incoterm</label>
+      <input
+        id="incoterm"
+        type="number"
+        pInputText
+        [(ngModel)]="materialType.incoterm"
+      />
+    </div>
+
+    <!-- Payment Term -->
+    <div id="inputField" class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="paymentTerm">Payment Term</label>
+      <input
+        id="paymentTerm"
+        type="number"
+        pInputText
+        [(ngModel)]="materialType.paymentTerm"
+      />
+    </div>
+
+    <!-- Contact Name -->
+    <div id="inputField" class="col-md-6 p-field flex flex-column mt-2">
+      <label class="label-text" for="contactName">Contact Name</label>
+      <input
+        id="contactName"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.contactName"
+      />
+    </div>
+
+    <!-- Contact Email -->
+    <div id="inputField" class="col-md-6 p-field flex flex-column mt-2">
+      <label class="label-text" for="contactEmail">Contact Email</label>
+      <input
+        id="contactEmail"
+        type="email"
+        pInputText
+        [(ngModel)]="materialType.contactEmail"
+      />
+    </div>
+
+    <!-- Percentage At PO -->
+    <div id="inputField" class="col-md-6 p-field flex flex-column mt-2">
+      <label class="label-text" for="percentageAtPo">Percentage at PO</label>
+      <input
+        id="percentageAtPo"
+        type="number"
+        pInputText
+        [(ngModel)]="materialType.percentageAtPo"
+      />
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="modal-btn-container mt-4">
+    <button
+      pButton
+      pRipple
+      [loading]="saving"
+      *ngIf="!editMode"
+      (click)="save()"
+      [rounded]="true"
+      class="save-btn"
+    >
+      Save
+    </button>
+    <button
+      pButton
+      pRipple
+      [loading]="saving"
+      *ngIf="editMode"
+      (click)="update()"
+      [rounded]="true"
+      class="update-btn"
+    >
+      Update
+    </button>
+    <button
+      (click)="displayModal = false"
+      pButton
+      pRipple
+      [rounded]="true"
+      class="cancel-btn"
+    >
+      Cancel
+    </button>
+  </div>
+</p-dialog>
+
+<div>
+  <p-toast />
+  <p-confirmDialog class="cancel-modal" />
+</div>

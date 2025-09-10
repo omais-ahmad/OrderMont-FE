@@ -17,7 +17,9 @@ import { AgGridModule } from "ag-grid-angular";
 import { SkeletonModule } from "primeng/skeleton";
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {DayBookComponent} from "./daybook/dayBook.component";
-import { CreateItemCategoryModalComponent } from './shared/create-item-category-modal/create-item-category-modal.component'
+import { CreateItemCategoryModalComponent } from './shared/create-item-category-modal/create-item-category-modal.component';
+import { VendorsComponent } from './vendors/vendors.component';
+import { LocationComponent } from './location/location.component'
 
 @NgModule({
   declarations: [
@@ -32,6 +34,8 @@ import { CreateItemCategoryModalComponent } from './shared/create-item-category-
     ProductSearchEditorComponent,
     DayBookComponent,
     CreateItemCategoryModalComponent,
+    VendorsComponent,
+    LocationComponent,
   ],
   imports: [
     CommonModule,
